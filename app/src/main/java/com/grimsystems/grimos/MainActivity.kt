@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -138,7 +139,7 @@ private fun IOSHome() {
                     }
                 }
                 Surface(color = Color(0xBFFFFFFF), shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth().clickable {
-                    try { context.startActivity(Intent(Settings.ACTION_NOTIFICATION_SETTINGS)) }
+                    try { context.startActivity(Intent(Settings.ACTION_SETTINGS)) }
                     catch (_: Exception) { context.startActivity(Intent(Settings.ACTION_SETTINGS)) }
                 }) {
                     Row(Modifier.padding(horizontal = 16.dp, vertical = 11.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -214,7 +215,7 @@ private fun AppGlyph(drawable: android.graphics.drawable.Drawable?) {
             val canvas = Canvas(bmp)
             drawable.setBounds(0, 0, 96, 96)
             drawable.draw(canvas)
-            androidx.compose.ui.graphics.asImageBitmap(bmp)
+            bmp.asImageBitmap()
         }
     }
     if (bitmap != null) {
