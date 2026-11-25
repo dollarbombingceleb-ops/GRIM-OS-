@@ -210,7 +210,7 @@ private fun HomePage(
         ) {
             items(chosen) { app -> AppTile(app, iconScale, { onLaunch(app) }) }
             item { SystemTile(Icons.Default.Apps, "All apps", iconScale, onLibrary) }
-            item { SystemTile(Icons.Default.Settings, "GRIM Settings", iconScale, onSettings = onSettings) }
+            item { SystemTile(Icons.Default.Settings, "GRIM Settings", iconScale, onClick = onSettings) }
             item { SystemTile(Icons.Default.Widgets, "Widgets", iconScale) { onSettings() } }
             item { SystemTile(Icons.Default.Lock, "Lock preview", iconScale, onLock) }
         }
@@ -306,6 +306,7 @@ private fun AppLibrary(apps: List<PhoneApp>, query: String, onQuery: (String) ->
 
 @Composable
 private fun SettingsPage(wallpaper: Int, onWallpaper: (Int) -> Unit, scale: Float, onScale: (Float) -> Unit, onBack: () -> Unit) {
+    val context = LocalContext.current
     Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(22.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Default.ArrowBack, "Back", tint = Color.White, modifier = Modifier.clickable { onBack() })
@@ -329,9 +330,9 @@ private fun SettingsPage(wallpaper: Int, onWallpaper: (Int) -> Unit, scale: Floa
         Text("Home screen icon size: ${(scale * 100).toInt()}%", color = SoftWhite.copy(alpha = .7f), fontSize = 12.sp)
         Spacer(Modifier.height(24.dp))
         Text("DEVICE & PRIVACY", color = Mint, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
-        SettingsRow(Icons.Default.Notifications, "Notification access", "Review Android notification access settings") { openSystemSettings(LocalContext.current, Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS) }
-        SettingsRow(Icons.Default.Lock, "Lock screen", "Open Android lock screen settings") { openSystemSettings(LocalContext.current, Settings.ACTION_DISPLAY_SETTINGS) }
-        SettingsRow(Icons.Default.Settings, "Android system settings", "Manage device-level settings") { openSystemSettings(LocalContext.current, Settings.ACTION_SETTINGS) }
+        SettingsRow(Icons.Default.Notifications, "Notification access", "Review Android notification access settings") { openSystemSettings(context, Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS) }
+        SettingsRow(Icons.Default.Lock, "Lock screen", "Open Android lock screen settings") { openSystemSettings(context, Settings.ACTION_DISPLAY_SETTINGS) }
+        SettingsRow(Icons.Default.Settings, "Android system settings", "Manage device-level settings") { openSystemSettings(context, Settings.ACTION_SETTINGS) }
         SettingsRow(Icons.Default.Info, "About GRIM OS", "GRIM SYSTEMS • Android launcher") { }
     }
 }
