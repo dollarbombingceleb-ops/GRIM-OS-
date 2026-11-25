@@ -1,6 +1,8 @@
 package com.grimsystems.grimos
 
 import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.os.Bundle
 import android.content.pm.PackageManager
 import androidx.activity.ComponentActivity
@@ -114,7 +116,7 @@ private fun IOSHome() {
                     Surface(color = Color(0xBFFFFFFF), shape = RoundedCornerShape(30.dp), modifier = Modifier.fillMaxWidth()) {
                         Row(Modifier.padding(vertical = 13.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
                             HomeIcon(Icons.Default.PhoneAndroid, "Apps") { appDrawer = true }
-                            HomeIcon(Icons.Default.MusicNote, "Music") { openApp(context, apps, listOf("music")) }
+                            HomeIcon(Icons.Default.MusicNote, "Apple Music") { openAppleApp(context, "com.apple.android.music") }
                             HomeIcon(Icons.Default.Settings, "Settings") { openApp(context, apps, listOf("settings")) }
                             HomeIcon(Icons.Default.Folder, "Files") { openApp(context, apps, listOf("file")) }
                         }
@@ -173,6 +175,14 @@ private fun ControlTile(label: String, icon: ImageVector, modifier: Modifier = M
             Text(label, color = Ink, fontSize = 10.sp, fontWeight = FontWeight.Medium)
         }
     }
+}
+
+private fun openAppleApp(context: android.content.Context, packageName: String) {
+    val launch = context.packageManager.getLaunchIntentForPackage(packageName)
+    if (launch != null) { context.startActivity(launch); return }
+    val market = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + packageName))
+    try { context.startActivity(market) }
+    catch (_: Exception) { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + packageName))) }
 }
 
 private fun openApp(context: android.content.Context, apps: List<PhoneApp>, terms: List<String>) {
