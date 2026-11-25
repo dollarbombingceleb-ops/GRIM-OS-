@@ -1,48 +1,23 @@
-
 # GRIM OS
 
 ### A premium Android experience by GRIM SYSTEMS
 
-GRIM OS is an Android customisation platform designed to deliver a polished, fast and immersive smartphone experience inspired by Apple's Liquid Glass design language.
+GRIM OS is a native Android customization foundation built with Kotlin and Jetpack Compose. The first installable build provides a polished dark emerald home experience and quick-access entry points.
 
-## Vision
+## Current build
+- Native Android application (not a web wrapper)
+- Premium dark / emerald interface
+- Live device-local clock and date
+- Quick-access cards for Settings, Files, Device, Privacy, Display and About
+- Android launcher entry point
 
-Make Android feel beautifully integrated, responsive and intuitive while preserving Android's underlying functionality and security.
+## Important capability note
+This first build is an app experience, not a replacement Android operating system. Android restricts launcher, notification shade, dialer, and system-setting control; those features need separate modules, user opt-in, and platform permissions.
 
-## Core Modules
-
-- Liquid Glass custom launcher
-- Custom app icons, folders and widgets
-- iPhone-inspired interface design
-- Notification and quick-setting enhancements
-- Custom dialer and contact experience
-- Device information and performance tools
-- Supported third-party app companion experiences
-- Modular architecture for future expansion
+## Build
+The GitHub Actions workflow builds a debug APK on pushes to main and manual workflow dispatch. The APK is uploaded as a downloadable workflow artifact.
 
 ## Technology
+Kotlin, Android SDK 35, Jetpack Compose, Material 3, Gradle, GitHub Actions.
 
-- Kotlin
-- Android SDK
-- Jetpack Compose
-- Material 3
-- Room and DataStore
-- Gradle
-- GitHub Actions
-
-## Development Principles
-
-- Real functionality, not simulated features
-- Performance-first engineering
-- Privacy and permission transparency
-- Android security compatibility
-- Modular, maintainable code
-- Testing on real Android devices
-
-## Developer
-
-GRIM SYSTEMS
-
-## Project Status
-
-Early development.
+**GRIM SYSTEMS**
