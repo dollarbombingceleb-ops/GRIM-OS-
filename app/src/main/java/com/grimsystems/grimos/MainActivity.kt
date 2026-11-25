@@ -9,6 +9,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -52,6 +57,8 @@ private fun IOSHome() {
     var controlOpen by remember { mutableStateOf(false) }
     var appDrawer by remember { mutableStateOf(false) }
     var apps by remember { mutableStateOf(emptyList<PhoneApp>()) }
+    var clockTick by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) { while (true) { clockTick++; delay(1000) } }
     LaunchedEffect(Unit) {
         val pm = context.packageManager
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
@@ -61,11 +68,19 @@ private fun IOSHome() {
             .distinctBy { it.packageName }
             .sortedBy { it.name.lowercase(Locale.getDefault()) }
     }
-    val date = SimpleDateFormat("EEEE, d MMMM", Locale.getDefault()).format(Date())
-    val time = SimpleDateFormat("h:mm", Locale.getDefault()).format(Date())
+    val date = remember(clockTick) { SimpleDateFormat("EEEE, d MMMM", Locale.getDefault()).format(Date()) }
+    val time = remember(clockTick) { SimpleDateFormat("h:mm", Locale.getDefault()).format(Date()) }
 
     MaterialTheme(colorScheme = lightColorScheme(primary = Sky, background = Color(0xFFEAF2F9))) {
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF9EC9E8), Color(0xFFE7EDF3), Color(0xFFD5E1EC))))) {
+        Box(Modifier.fillMaxSize()
+            .pointerInput(appDrawer) {
+                var total = 0f
+                detectVerticalDragGestures(
+                    onVerticalDrag = { _, amount -> total += amount },
+                    onDragEnd = { if (total < -45f) appDrawer = true else if (total > 45f) appDrawer = false; total = 0f }
+                )
+            }
+            .background(Brush.verticalGradient(listOf(Color(0xFF6EA9D8), Color(0xFFB9D5E9), Color(0xFFEAF0F5))))) {
             Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 22.dp)) {
                 Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text(time, color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
@@ -99,7 +114,7 @@ private fun IOSHome() {
                                     val launch = context.packageManager.getLaunchIntentForPackage(app.packageName)
                                     if (launch != null) context.startActivity(launch)
                                 }) {
-                                    Icon(Icons.Default.Apps, null, tint = Color(0xFF526A80), modifier = Modifier.size(34.dp))
+                                    AppGlyph(app.icon)
                                     Text(app.name, color = Ink, fontSize = 10.sp, maxLines = 2)
                                 }
                             }
@@ -137,7 +152,7 @@ private fun IOSHome() {
                     }
                 }
                 Spacer(Modifier.height(14.dp))
-                Text("Swipe up · App Library", color = Color(0xCCFFFFFF), fontSize = 11.sp, modifier = Modifier.align(Alignment.CenterHorizontally).clickable { appDrawer = !appDrawer }.padding(bottom = 8.dp))
+                Text(if (appDrawer) "Swipe down · Home" else "Swipe up · App Library", color = Color(0xCCFFFFFF), fontSize = 11.sp, modifier = Modifier.align(Alignment.CenterHorizontally).clickable { appDrawer = !appDrawer }.padding(bottom = 8.dp))
             }
             if (controlOpen) {
                 Box(Modifier.fillMaxSize().background(Color(0x990A1725)).clickable { controlOpen = false }, contentAlignment = Alignment.TopEnd) {
@@ -188,6 +203,24 @@ private fun ControlTile(label: String, icon: ImageVector, modifier: Modifier = M
             Icon(icon, null, tint = Ink)
             Text(label, color = Ink, fontSize = 10.sp, fontWeight = FontWeight.Medium)
         }
+    }
+}
+
+@Composable
+private fun AppGlyph(drawable: android.graphics.drawable.Drawable?) {
+    val bitmap = remember(drawable) {
+        if (drawable == null) null else {
+            val bmp = Bitmap.createBitmap(96, 96, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bmp)
+            drawable.setBounds(0, 0, 96, 96)
+            drawable.draw(canvas)
+            androidx.compose.ui.graphics.asImageBitmap(bmp)
+        }
+    }
+    if (bitmap != null) {
+        androidx.compose.foundation.Image(bitmap = bitmap, contentDescription = null, modifier = Modifier.size(48.dp))
+    } else {
+        Icon(Icons.Default.Apps, null, tint = Color(0xFF526A80), modifier = Modifier.size(40.dp))
     }
 }
 
