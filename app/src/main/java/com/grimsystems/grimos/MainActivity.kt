@@ -122,6 +122,20 @@ private fun IOSHome() {
                         }
                     }
                 }
+                Surface(color = Color(0xBFFFFFFF), shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth().clickable {
+                    try { context.startActivity(Intent(Settings.ACTION_NOTIFICATION_SETTINGS)) }
+                    catch (_: Exception) { context.startActivity(Intent(Settings.ACTION_SETTINGS)) }
+                }) {
+                    Row(Modifier.padding(horizontal = 16.dp, vertical = 11.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.NotificationsActive, null, tint = Ink)
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Lock Screen Notifications", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                            Text("Manage lock-screen alerts and previews", color = Color.DarkGray, fontSize = 10.sp)
+                        }
+                        Icon(Icons.Default.ChevronRight, null, tint = Ink)
+                    }
+                }
                 Spacer(Modifier.height(14.dp))
                 Text("Swipe up · App Library", color = Color(0xCCFFFFFF), fontSize = 11.sp, modifier = Modifier.align(Alignment.CenterHorizontally).clickable { appDrawer = !appDrawer }.padding(bottom = 8.dp))
             }
