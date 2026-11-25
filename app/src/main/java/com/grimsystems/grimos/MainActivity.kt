@@ -97,7 +97,7 @@ private fun IOSHome() {
                                     val launch = context.packageManager.getLaunchIntentForPackage(app.packageName)
                                     if (launch != null) context.startActivity(launch)
                                 }) {
-                                    androidx.compose.foundation.Image(painter = androidx.compose.ui.graphics.painter.BitmapPainter(android.graphics.Bitmap.createBitmap(1,1,android.graphics.Bitmap.Config.ARGB_8888).asImageBitmap()), contentDescription = null, modifier = Modifier.size(1.dp))
+                                    Icon(Icons.Default.Apps, null, tint = Color(0xFF526A80), modifier = Modifier.size(34.dp))
                                     Text(app.name, color = Ink, fontSize = 10.sp, maxLines = 2)
                                 }
                             }
