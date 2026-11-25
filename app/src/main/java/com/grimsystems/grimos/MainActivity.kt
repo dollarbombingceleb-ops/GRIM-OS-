@@ -1,6 +1,8 @@
 package com.grimsystems.grimos
 
+import android.content.Intent
 import android.os.Bundle
+import android.content.pm.PackageManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -16,9 +19,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,90 +31,151 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val Ink = Color(0xFF07100D)
-private val Panel = Color(0xFF12211B)
-private val Emerald = Color(0xFF39E69A)
-private val Muted = Color(0xFF9BB5A8)
+private val Sky = Color(0xFF8FC9F8)
+private val Glass = Color(0xBFFFFFFF)
+private val Ink = Color(0xFF17202A)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { GrimHome() }
+        setContent { IOSHome() }
     }
 }
 
-private data class Tool(val title: String, val subtitle: String, val icon: ImageVector)
+private data class PhoneApp(val name: String, val packageName: String, val icon: android.graphics.drawable.Drawable?)
+
 @Composable
-fun GrimHome() {
-    var selected by remember { mutableStateOf("Home") }
-    var showInfo by remember { mutableStateOf(false) }
-    val tools = listOf(
-        Tool("Settings", "System preferences", Icons.Default.Settings),
-        Tool("Files", "Open your files", Icons.Default.Folder),
-        Tool("Device", "Device information", Icons.Default.PhoneAndroid),
-        Tool("Privacy", "Security overview", Icons.Default.Security),
-        Tool("Display", "Screen & appearance", Icons.Default.Palette),
-        Tool("About", "GRIM SYSTEMS", Icons.Default.Info)
-    )
-    val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+private fun IOSHome() {
+    val context = LocalContext.current
+    var controlOpen by remember { mutableStateOf(false) }
+    var appDrawer by remember { mutableStateOf(false) }
+    var apps by remember { mutableStateOf(emptyList<PhoneApp>()) }
+    LaunchedEffect(Unit) {
+        val pm = context.packageManager
+        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        @Suppress("DEPRECATION")
+        apps = pm.queryIntentActivities(intent, PackageManager.MATCH_ALL)
+            .map { PhoneApp(it.loadLabel(pm).toString(), it.activityInfo.packageName, it.loadIcon(pm)) }
+            .distinctBy { it.packageName }
+            .sortedBy { it.name.lowercase(Locale.getDefault()) }
+    }
     val date = SimpleDateFormat("EEEE, d MMMM", Locale.getDefault()).format(Date())
-    MaterialTheme(colorScheme = darkColorScheme(primary = Emerald, background = Ink, surface = Panel)) {
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF10251B), Ink, Color(0xFF050807))))) {
+    val time = SimpleDateFormat("h:mm", Locale.getDefault()).format(Date())
+
+    MaterialTheme(colorScheme = lightColorScheme(primary = Sky, background = Color(0xFFEAF2F9))) {
+        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF9EC9E8), Color(0xFFE7EDF3), Color(0xFFD5E1EC))))) {
             Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 22.dp)) {
-                Row(Modifier.fillMaxWidth().padding(top = 18.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Column {
-                        Text("GRIM SYSTEMS", color = Emerald, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
-                        Text("GRIM OS", color = Color.White, fontSize = 25.sp, fontWeight = FontWeight.Black)
+                Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text(time, color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.SignalCellularAlt, null, tint = Ink, modifier = Modifier.size(15.dp))
+                        Spacer(Modifier.width(5.dp))
+                        Icon(Icons.Default.Wifi, null, tint = Ink, modifier = Modifier.size(15.dp))
+                        Spacer(Modifier.width(5.dp))
+                        Icon(Icons.Default.BatteryFull, null, tint = Ink, modifier = Modifier.size(18.dp))
                     }
-                    Surface(color = Color(0x3339E69A), shape = RoundedCornerShape(50)) {
-                        Row(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Box(Modifier.size(7.dp).background(Emerald, RoundedCornerShape(50)))
-                            Spacer(Modifier.width(7.dp))
-                            Text("SYSTEM READY", color = Emerald, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                }
+                Spacer(Modifier.height(30.dp))
+                Text(date, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                Text(time, color = Color.White, fontSize = 64.sp, fontWeight = FontWeight.Light, letterSpacing = (-2).sp)
+                Spacer(Modifier.height(24.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    Surface(color = Glass, shape = RoundedCornerShape(22.dp), modifier = Modifier.clickable { controlOpen = true }) {
+                        Row(Modifier.padding(horizontal = 15.dp, vertical = 11.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Tune, null, tint = Ink)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Control Centre", color = Ink, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
-                Spacer(Modifier.height(42.dp))
-                Text(time, color = Color.White, fontSize = 66.sp, fontWeight = FontWeight.Light, letterSpacing = (-2).sp)
-                Text(date, color = Muted, fontSize = 14.sp)
-                Spacer(Modifier.height(28.dp))
-                Surface(color = Color(0xCC15271F), shape = RoundedCornerShape(26.dp), modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(20.dp)) {
-                        Text("YOUR DEVICE. REIMAGINED.", color = Emerald, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                        Spacer(Modifier.height(8.dp))
-                        Text("A cleaner Android\nexperience starts here.", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.SemiBold, lineHeight = 28.sp)
-                        Spacer(Modifier.height(8.dp))
-                        Text("Explore your tools and make your phone feel like yours.", color = Muted, fontSize = 12.sp)
-                    }
-                }
-                Spacer(Modifier.height(25.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("QUICK ACCESS", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                    Text("6 MODULES", color = Muted, fontSize = 9.sp)
-                }
-                Spacer(Modifier.height(12.dp))
-                LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(tools) { tool ->
-                        Surface(color = Panel.copy(alpha = .92f), shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth().clickable { selected = tool.title; showInfo = true }) {
-                            Column(Modifier.padding(16.dp)) {
-                                Icon(tool.icon, null, tint = Emerald, modifier = Modifier.size(25.dp))
-                                Spacer(Modifier.height(16.dp))
-                                Text(tool.title, color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
-                                Text(tool.subtitle, color = Muted, fontSize = 10.sp)
+                Spacer(Modifier.weight(1f))
+                if (appDrawer) {
+                    Surface(color = Color(0xDDF8FBFF), shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth().weight(1.4f)) {
+                        LazyVerticalGrid(columns = GridCells.Fixed(4), contentPadding = PaddingValues(14.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            items(apps) { app ->
+                                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable {
+                                    val launch = context.packageManager.getLaunchIntentForPackage(app.packageName)
+                                    if (launch != null) context.startActivity(launch)
+                                }) {
+                                    androidx.compose.foundation.Image(painter = androidx.compose.ui.graphics.painter.BitmapPainter(android.graphics.Bitmap.createBitmap(1,1,android.graphics.Bitmap.Config.ARGB_8888).asImageBitmap()), contentDescription = null, modifier = Modifier.size(1.dp))
+                                    Text(app.name, color = Ink, fontSize = 10.sp, maxLines = 2)
+                                }
                             }
                         }
                     }
+                } else {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                        HomeIcon(Icons.Default.Phone, "Phone") { openApp(context, apps, listOf("phone", "dialer")) }
+                        HomeIcon(Icons.Default.Message, "Messages") { openApp(context, apps, listOf("message", "sms")) }
+                        HomeIcon(Icons.Default.CameraAlt, "Camera") { openApp(context, apps, listOf("camera")) }
+                        HomeIcon(Icons.Default.Photo, "Photos") { openApp(context, apps, listOf("photo", "gallery")) }
+                    }
+                    Spacer(Modifier.height(18.dp))
+                    Surface(color = Color(0xBFFFFFFF), shape = RoundedCornerShape(30.dp), modifier = Modifier.fillMaxWidth()) {
+                        Row(Modifier.padding(vertical = 13.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+                            HomeIcon(Icons.Default.PhoneAndroid, "Apps") { appDrawer = true }
+                            HomeIcon(Icons.Default.MusicNote, "Music") { openApp(context, apps, listOf("music")) }
+                            HomeIcon(Icons.Default.Settings, "Settings") { openApp(context, apps, listOf("settings")) }
+                            HomeIcon(Icons.Default.Folder, "Files") { openApp(context, apps, listOf("file")) }
+                        }
+                    }
                 }
-                Row(Modifier.fillMaxWidth().padding(vertical = 14.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    listOf("Home" to Icons.Default.Home, "Apps" to Icons.Default.Apps, "Profile" to Icons.Default.Person).forEach { (label, icon) ->
-                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { selected = label }) {
-                            Icon(icon, null, tint = if (selected == label) Emerald else Muted)
-                            Text(label, color = if (selected == label) Emerald else Muted, fontSize = 10.sp)
+                Spacer(Modifier.height(14.dp))
+                Text("Swipe up · App Library", color = Color(0xCCFFFFFF), fontSize = 11.sp, modifier = Modifier.align(Alignment.CenterHorizontally).clickable { appDrawer = !appDrawer }.padding(bottom = 8.dp))
+            }
+            if (controlOpen) {
+                Box(Modifier.fillMaxSize().background(Color(0x990A1725)).clickable { controlOpen = false }, contentAlignment = Alignment.TopEnd) {
+                    Surface(color = Color(0xF2EAF2F9), shape = RoundedCornerShape(30.dp), modifier = Modifier.fillMaxWidth().padding(12.dp).statusBarsPadding().clickable(enabled = false) {}) {
+                        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            Text("Control Centre", color = Ink, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                ControlTile("Airplane", Icons.Default.Flight, Modifier.weight(1f))
+                                ControlTile("Wi-Fi", Icons.Default.Wifi, Modifier.weight(1f))
+                                ControlTile("Bluetooth", Icons.Default.Bluetooth, Modifier.weight(1f))
+                            }
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                ControlTile("Focus", Icons.Default.DoNotDisturbOn, Modifier.weight(1f))
+                                ControlTile("Rotation", Icons.Default.ScreenRotation, Modifier.weight(1f))
+                                ControlTile("Flashlight", Icons.Default.FlashlightOn, Modifier.weight(1f))
+                            }
+                            Text("Brightness", color = Ink, fontWeight = FontWeight.SemiBold)
+                            var brightness by remember { mutableFloatStateOf(.7f) }
+                            Slider(value = brightness, onValueChange = { brightness = it })
+                            Text("Volume", color = Ink, fontWeight = FontWeight.SemiBold)
+                            var volume by remember { mutableFloatStateOf(.55f) }
+                            Slider(value = volume, onValueChange = { volume = it })
+                            Text("These are interface controls in this preview. Device-level actions require Android APIs and permissions.", color = Color.DarkGray, fontSize = 11.sp)
+                            TextButton(onClick = { controlOpen = false }) { Text("Done") }
                         }
                     }
                 }
             }
-            if (showInfo) AlertDialog(onDismissRequest = { showInfo = false }, containerColor = Panel, title = { Text(selected, color = Color.White) }, text = { Text("This module is part of the GRIM OS foundation. Some device controls require Android permissions or a future module update.", color = Muted) }, confirmButton = { TextButton(onClick = { showInfo = false }) { Text("GOT IT", color = Emerald) } })
         }
     }
+}
+
+@Composable
+private fun HomeIcon(icon: ImageVector, label: String, onClick: () -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable(onClick = onClick)) {
+        Surface(color = Color(0xEFFFFFFF), shape = RoundedCornerShape(17.dp), modifier = Modifier.size(53.dp)) {
+            Box(contentAlignment = Alignment.Center) { Icon(icon, null, tint = Color(0xFF273746), modifier = Modifier.size(26.dp)) }
+        }
+        Spacer(Modifier.height(5.dp))
+        Text(label, color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Medium)
+    }
+}
+
+@Composable
+private fun ControlTile(label: String, icon: ImageVector, modifier: Modifier = Modifier) {
+    Surface(color = Color(0xFFCFDFEC), shape = RoundedCornerShape(18.dp), modifier = modifier.height(74.dp)) {
+        Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.SpaceBetween) {
+            Icon(icon, null, tint = Ink)
+            Text(label, color = Ink, fontSize = 10.sp, fontWeight = FontWeight.Medium)
+        }
+    }
+}
+
+private fun openApp(context: android.content.Context, apps: List<PhoneApp>, terms: List<String>) {
+    val app = apps.firstOrNull { a -> terms.any { a.name.contains(it, true) || a.packageName.contains(it, true) } } ?: return
+    context.packageManager.getLaunchIntentForPackage(app.packageName)?.let { context.startActivity(it) }
 }
